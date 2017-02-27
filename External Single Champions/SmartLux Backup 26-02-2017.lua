@@ -21,8 +21,7 @@ Menu.Key:MenuElement({id = "ComboKey", name = "Combo Key", key = 32})
 Menu.Key:MenuElement({id = "HarassKey", name = "Harass Key", key = 67})
 Menu.Key:MenuElement({id = "WaveClearKey", name = "Wave Clear Key", key = 86})
 Menu.Key:MenuElement({id = "LastHitKey", name = "Last Hit Key", key = 88})
-Menu.Key:MenuElement({id = "TrapKey", name = "Trap on Fow HK", key = 84})
-Menu.Key:MenuElement({id = "StealKey", name = "Steal Drake / Nash Key (Low Range - Behind the Wall of the Boss)", key = 72})
+Menu.Key:MenuElement({id = "Trap", name = "Trap on Fow HK", key = 84})
 
 -- Combo Menu
 Menu:MenuElement({type = MENU, id = "Combo", name = "Combo Settings"})
@@ -40,13 +39,13 @@ Menu.Harass:MenuElement({id = "HarassMana", name = "Min. Mana", value = 40, min 
 
 -- Farm Menu
 Menu:MenuElement({type = MENU, id = "Farm", name = "Farm Settings"})
-Menu.Farm:MenuElement({id = "FarmSpells", name = "Farm Spells", value = false})
-Menu.Farm:MenuElement({id = "FarmE", name = "Use E", value = false})
+Menu.Farm:MenuElement({id = "FarmSpells", name = "Farm Spells", value = true})
+Menu.Farm:MenuElement({id = "FarmE", name = "Use E", value = true})
 Menu.Farm:MenuElement({id = "FarmMana", name = "Min. Mana", value = 40, min = 0, max = 100})
 
 -- LastHit Menu
 Menu:MenuElement({type = MENU, id = "LastHit", name = "Last Hit Settings - WORK IN PROGRESS"})
-Menu.LastHit:MenuElement({id = "LastHitQ", name = "Use Q", value = false})
+Menu.LastHit:MenuElement({id = "LastHitQ", name = "Use Q", value = true})
 Menu.LastHit:MenuElement({id = "LastHitMana", name = "Min. Mana", value = 40, min = 0, max = 100})
 
 -- Ultimate Misc Menu
@@ -57,7 +56,6 @@ Menu.UltimateMisc:MenuElement({id = "AutoR", name = "Lux will R to Kill Single e
 Menu:MenuElement({type = MENU, id = "Misc", name = "Misc Settings"})
 Menu.Misc:MenuElement({id = "MaxRange", name = "Max Range Limiter", value = 0.9, min = 0.5, max = 1, step = 0.01})
 Menu.Misc:MenuElement({type = SPACE, id = "ToolTip", name = "eg. X = 0.80 (Q.Range = (1150 * 0.80) = 920)"})
-Menu.Misc:MenuElement({id = "Debug", name = "Debug Mode", value = true})
 
 -- Drawings Menu
 Menu:MenuElement({type = MENU, id = "Draw", name = "Drawing Settings"})
@@ -135,10 +133,6 @@ function GetRDmg(target)
 
 end
 
---DEBUG Function
-
--- FINISH DEBUG
-
 
 -- CastSpell Mouse Sync TEST Function (Noddy)
 local castSpell = {state = 0, tick = GetTickCount(), casting = GetTickCount() - 1000, mouse = mousePos}
@@ -181,77 +175,51 @@ Callback.Add('Tick',function()
 
 	if Menu.Key.ComboKey:Value()  then--START COMBO SECTION
 	
-	--local Evar = 0
-	--local Qvar = 0
 	
 		--SMART Q (IF SMART Q ENABLED)
-		if isReady(_Q) and not Evar and Menu.Combo.SmartQ:Value() then
+		if isReady(_Q) and Menu.Combo.SmartQ:Value() then
 			local qTarget = GetTarget(Q.Range * Menu.Misc.MaxRange:Value())
-			if qTarget and (IsSlowTarget(qTarget) or IsImmobileTarget(qTarget) or IsFearOrCharm(qTarget)) and qTarget:GetCollision(Q.Radius, Q.Speed, Q.Delay) < 1 then --Added Collision 1 for Q
+			if qTarget and IsSlowTarget(qTarget) and qTarget:GetCollision(Q.Radius, Q.Speed, Q.Delay) < 1 then --Added Collision 1 for Q
 				local qPos = qTarget:GetPrediction(Q.Speed, Q.Delay)
           CastSpell(HK_Q ,qPos ,Q.Range , Q.Delay*1000)
 				--Control.CastSpell(HK_Q, qPos)
-				if Menu.Misc.Debug:Value() then
-                PrintChat("Smart Q After E THROW")
+				--PrintChat("Combo Q Casted")
 			end
 		end
-		end
-		
 	
 		--DEFAULT Q	(IF SMART Q DISABLED)
-		if not Menu.Combo.SmartQ:Value() then
+			if not Menu.Combo.SmartQ:Value() then
 		if isReady(_Q) and Menu.Combo.ComboQ:Value() then
 			local qTarget = GetTarget(Q.Range * Menu.Misc.MaxRange:Value())
 			if qTarget and qTarget:GetCollision(Q.Radius, Q.Speed, Q.Delay) < 1 then --Added Collision 1 for Q
 				local qPos = qTarget:GetPrediction(Q.Speed, Q.Delay)
           CastSpell(HK_Q ,qPos ,Q.Range , Q.Delay*1000)
 				--Control.CastSpell(HK_Q, qPos)
-				if Menu.Misc.Debug:Value() then
-                PrintChat("Q DEFAULT")
-		end
-		end
-		end
-		end
-		
-		-- THROW E (Actually there are no more E Casting methods) -- PROBLEM HERE
-		if isReady(_E) and Menu.Combo.ComboE:Value() then
-			local Evar = true
-			local eTarget = GetTarget(E.Range * Menu.Misc.MaxRange:Value())
-			if eTarget and Evar and not IsSlowTarget(eTarget) then
-				local ePos = eTarget:GetPrediction(E.Speed, E.Delay)
-				CastSpell(HK_E, ePos, E.Range, E.Delay*1000)
-				local Evar = false
-				if Menu.Misc.Debug:Value() then
-                PrintChat("Combo E THROW BEFORE Q")
+				--PrintChat("Combo Q Casted")
 			end
 		end
 		end
 		
- -- Explodes E
-        if isReady(_E) and not Evar and not isReady(_Q) and Menu.Combo.ComboE:Value() then
-            local eTarget = GetTarget(E.Range * Menu.Misc.MaxRange:Value())
-            if eTarget and IsSlowTarget(eTarget) and not isReady(_Q) then
-                local ePos = eTarget:GetPrediction(E.Speed, E.Delay)
-                CastSpell(HK_E, ePos, E.Range, E.Delay*1000)
-				--local Evar = 0
-				if Menu.Misc.Debug:Value() then
-                PrintChat("Combo E EXPLODED AFTER E-Q")
-            end
-        end
+		-- DEFAULT E (Actually there are no more E Casting methods)
+		if isReady(_E) and Menu.Combo.ComboE:Value() then
+			local eTarget = GetTarget(E.Range * Menu.Misc.MaxRange:Value())
+			if eTarget then
+				local ePos = eTarget:GetPrediction(E.Speed, E.Delay)
+				CastSpell(HK_E, ePos, E.Range, E.Delay*1000)
+				--PrintChat("Combo E Casted")
+			end
 		end
 		
-
 		--- DEFAULT R (IF SMART R DISABLED, BAD IDEA)
 				 if isReady(_R) and Menu.Combo.ComboR:Value() and not Menu.Combo.SmartR:Value()  then
 			local rTarget = GetTarget(R.Range * Menu.Misc.MaxRange:Value())
-		if Menu.Misc.Debug:Value() then
-			PrintChat("DEBUG: BAD Logic R Casted")
+		
+			PrintChat("BAD R")
 			if rTarget then
 				local rPos = rTarget:GetPrediction(R.Speed, R.Delay)
 				Control.CastSpell(HK_R, rPos)
 			--end
 			end
-		end
 		end
 		
 		
@@ -267,14 +235,13 @@ local hp = rTarget.health + rTarget.shieldAP
 local dmg = CalcMagicalDamage(myHero,rTarget,480 + 250*myHero:GetSpellData(_R).level + (0.70*myHero.ap))
 PrintChat(dmg)
 						if hp < dmg then
-						if Menu.Misc.Debug:Value() then
-						PrintChat("Debug: R Will KIll So Cast")
+						PrintChat("KLLLL R")
 				CastSpell(HK_R, rPos, R.Range, R.Delay*1000)--Si el enemigo se mueve falla la R en Root. Set no Pred
 			--end
 			end
 			end
 		end
-		end
+		
 		
 		
 
@@ -286,37 +253,19 @@ PrintChat(dmg)
 		
 		
 		if Menu.Key.TrapKey:Value()  then
-			local qTarget = GetTarget(Q.Range * Menu.Misc.MaxRange:Value())
-			if qTarget and qTarget:GetCollision(Q.Radius, Q.Speed, Q.Delay) < 1 then --Added Collision 1 for Q
-				local qPos = qTarget:GetPrediction(Q.Speed, Q.Delay)
-          CastSpell(HK_Q, qPos, Q.Range)
-		  CastSpell(HK_E, qPos, Q.Range)
-		  if not isReady(_Q) and IsImmobileTarget(qTarget) then
-		  CastSpell(HK_R, qPos, Q.Range)
-				--Control.CastSpell(HK_Q, qPos)
-			if Menu.Misc.Debug:Value() then
-				PrintChat("DEBUG : Trap Casted")
-		end
-		end
-		end
-		
-
-		end--END TRAP KEY
-
-	--Begins Steal Key 1
-	
-	if Menu.Key.StealKey:Value()  then
-		if isReady(_Q) and Menu.Key.StealKey:Value() then
+	if Menu.Key.ComboKey:Value() and not Menu.Combo.SmartQ:Value() then
+		if isReady(_Q) and Menu.Combo.ComboQ:Value() then
 			local qTarget = GetTarget(Q.Range * Menu.Misc.MaxRange:Value())
 			if qTarget and qTarget:GetCollision(Q.Radius, Q.Speed, Q.Delay) < 1 then --Added Collision 1 for Q
 				local qPos = qTarget:GetPrediction(Q.Speed, Q.Delay)
           CastSpell(HK_Q ,qPos ,Q.Range , Q.Delay*1000)
 				--Control.CastSpell(HK_Q, qPos)
 				--PrintChat("Combo Q Casted")
+			end
 		end
 		end
 		
-		if isReady(_E) and Menu.Key.StealKey:Value() then
+		if isReady(_E) and Menu.Combo.ComboE:Value() then
 			local eTarget = GetTarget(E.Range * Menu.Misc.MaxRange:Value())
 			if eTarget then
 				local ePos = eTarget:GetPrediction(E.Speed, E.Delay)
@@ -324,7 +273,20 @@ PrintChat(dmg)
 				--PrintChat("Combo E Casted")
 			end
 		end
-	
+		
+		
+				 if isReady(_R) and Menu.Combo.ComboR:Value() and not Menu.Combo.SmartR:Value()  then
+			local rTarget = GetTarget(R.Range * Menu.Misc.MaxRange:Value())
+		
+			PrintChat("BAD R")
+			if rTarget then
+				local rPos = rTarget:GetPrediction(R.Speed, R.Delay)
+				Control.CastSpell(HK_R, rPos)
+			--end
+			end
+		end
+		end
+
 	if Menu.Key.HarassKey:Value() and (myHero.mana/myHero.maxMana >= Menu.Harass.HarassMana:Value()/100) then
 		if isReady(_Q) and Menu.Harass.HarassQ:Value() then
 			local qTarget = GetTarget(Q.Range * Menu.Misc.MaxRange:Value())
@@ -351,11 +313,10 @@ PrintChat(dmg)
 			end
 		end
 	end
-	
-end
-end)--END OnUptade TICK
 
+end)
 
+-- FINISH TRAP KEY
 
 
 -- OnLoad
