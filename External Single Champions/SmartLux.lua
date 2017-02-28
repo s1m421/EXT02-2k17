@@ -36,13 +36,13 @@ Menu.Combo:MenuElement({id = "SmartR", name = "Smart R - WIP", value = true})
 Menu:MenuElement({type = MENU, id = "Harass", name = "Harass Settings"})
 Menu.Harass:MenuElement({id = "HarassQ", name = "Use Q", value = true})
 Menu.Harass:MenuElement({id = "HarassE", name = "Use E", value = true})
-Menu.Harass:MenuElement({id = "HarassMana", name = "Min. Mana", value = 40, min = 0, max = 100})
+Menu.Harass:MenuElement({id = "HarassMana", name = "Min. Mana", value = 70, min = 0, max = 100})
 
 -- Farm Menu
 Menu:MenuElement({type = MENU, id = "Farm", name = "Farm Settings"})
-Menu.Farm:MenuElement({id = "FarmSpells", name = "Farm Spells", value = false})
-Menu.Farm:MenuElement({id = "FarmE", name = "Use E", value = false})
-Menu.Farm:MenuElement({id = "FarmMana", name = "Min. Mana", value = 40, min = 0, max = 100})
+Menu.Farm:MenuElement({id = "FarmSpells", name = "Farm Spells", value = true})
+Menu.Farm:MenuElement({id = "FarmE", name = "Use E", value = true})
+Menu.Farm:MenuElement({id = "FarmMana", name = "Min. Mana", value = 70, min = 0, max = 100})
 
 -- LastHit Menu
 Menu:MenuElement({type = MENU, id = "LastHit", name = "Last Hit Settings - WORK IN PROGRESS"})
@@ -393,6 +393,11 @@ end
 				--PrintChat("Combo E Casted")
 			end
 		end
+
+	
+end--End of Steal System
+
+
 	
 	if Menu.Key.HarassKey:Value() and (myHero.mana/myHero.maxMana >= Menu.Harass.HarassMana:Value()/100) then
 		if isReady(_Q) and Menu.Harass.HarassQ:Value() then
@@ -421,8 +426,7 @@ end
 		end
 	end
 	
-end--End of Steal System
-
+	
 --Start AUTO System
 --AUTO Q
 if isReady(_Q) then
