@@ -180,19 +180,48 @@ Callback.Add('Tick',function()
 
 
 	if Menu.Key.ComboKey:Value()  then--START COMBO SECTION
-	
+	--print(myHero:GetSpellData(_E).name)
+	-- LuxLightstrikeToggle -- EXPLOSION
+	-- LuxLightStrikeKugel -- Lanzamiento
 	--local Evar = 0
 	--local Qvar = 0
 	
+	
+	if myHero:GetSpellData(_E).name == "LuxLightStrikeKugel" then
+   --throw here
+   if isReady(_E) and Menu.Combo.ComboE:Value() then
+   local eTarget = GetTarget(E.Range * Menu.Misc.MaxRange:Value())
+			if eTarget then
+			local ePos = eTarget:GetPrediction(E.Speed, E.Delay)
+				CastSpell(HK_E, ePos, E.Range, E.Delay*1000)
+				if Menu.Misc.Debug:Value() then
+                PrintChat("Combo E Predict")
+			end
+		end
+		end
+else if not isReady(_Q) and isReady(_E) then
+local eTarget = GetTarget(E.Range * Menu.Misc.MaxRange:Value())
+			if eTarget then
+			local ePos = eTarget:GetPrediction(E.Speed, E.Delay)
+				CastSpell(HK_E, ePos, E.Range, E.Delay*1000)
+				if Menu.Misc.Debug:Value() then
+				PrintChat("Auto Smart Explosion")
+			end
+		end
+		end
+  --explode here
+end
+
+
 		--SMART Q (IF SMART Q ENABLED)
-		if isReady(_Q) and not Evar and Menu.Combo.SmartQ:Value() then
+		if isReady(_Q) and --[[not Evar and--]] Menu.Combo.SmartQ:Value() then
 			local qTarget = GetTarget(Q.Range * Menu.Misc.MaxRange:Value())
-			if qTarget and (IsSlowTarget(qTarget) or IsImmobileTarget(qTarget) or IsFearOrCharm(qTarget)) and qTarget:GetCollision(Q.Radius, Q.Speed, Q.Delay) < 1 then --Added Collision 1 for Q
+			if qTarget --[[and (IsSlowTarget(qTarget) or IsImmobileTarget(qTarget) or IsFearOrCharm(qTarget))]] and qTarget:GetCollision(Q.Radius, Q.Speed, Q.Delay) < 1 then --Added Collision 1 for Q
 				local qPos = qTarget:GetPrediction(Q.Speed, Q.Delay)
           CastSpell(HK_Q ,qPos ,Q.Range , Q.Delay*1000)
 				--Control.CastSpell(HK_Q, qPos)
 				if Menu.Misc.Debug:Value() then
-                PrintChat("Smart Q After E THROW")
+                PrintChat("Smart Q After E Predict")
 			end
 		end
 		end
@@ -213,14 +242,18 @@ Callback.Add('Tick',function()
 		end
 		end
 		
+		
+		
+
+--[[ OLD E SYSTEM
+		
 		-- THROW E (Actually there are no more E Casting methods) -- PROBLEM HERE
-		if isReady(_E) and Menu.Combo.ComboE:Value() then
-			local Evar = true
+		if isReady(_E) and Menu.Combo.ComboE:Value() then --Throw E
 			local eTarget = GetTarget(E.Range * Menu.Misc.MaxRange:Value())
-			if eTarget and Evar and not IsSlowTarget(eTarget) then
+			if eTarget and Evar then -- Si la E no esta en el Aire entonces la Lanzamos
 				local ePos = eTarget:GetPrediction(E.Speed, E.Delay)
 				CastSpell(HK_E, ePos, E.Range, E.Delay*1000)
-				local Evar = false
+				local Evar = false -- Como E esta en en Aire desactivamos mas Cast hasta la Q
 				if Menu.Misc.Debug:Value() then
                 PrintChat("Combo E THROW BEFORE Q")
 			end
@@ -228,18 +261,23 @@ Callback.Add('Tick',function()
 		end
 		
  -- Explodes E
-        if isReady(_E) and not Evar and not isReady(_Q) and Menu.Combo.ComboE:Value() then
+        if isReady(_E) and not Evar and not isReady(_Q) and Menu.Combo.ComboE:Value() then -- Cuando la E este ya en el aire y la Q tambien entonces Explotamos
             local eTarget = GetTarget(E.Range * Menu.Misc.MaxRange:Value())
             if eTarget and IsSlowTarget(eTarget) and not isReady(_Q) then
                 local ePos = eTarget:GetPrediction(E.Speed, E.Delay)
                 CastSpell(HK_E, ePos, E.Range, E.Delay*1000)
+          --local Evar = true -- Reiniciamos bucle de E
 				--local Evar = 0
 				if Menu.Misc.Debug:Value() then
                 PrintChat("Combo E EXPLODED AFTER E-Q")
             end
         end
 		end
-		
+      
+      if not isReady(_E) then --Cuando E esta en CD entonces la habilitamos para volver a lanzar de nuevo.
+        local Evar = true
+        end
+	--]]	
 
 		--- DEFAULT R (IF SMART R DISABLED, BAD IDEA)
 				 if isReady(_R) and Menu.Combo.ComboR:Value() and not Menu.Combo.SmartR:Value()  then
@@ -264,9 +302,11 @@ Callback.Add('Tick',function()
 			PrintChat("Target Not Killeable with R")
 				local rPos = rTarget:GetPrediction(R.Speed, R.Delay)
 local hp = rTarget.health + rTarget.shieldAP
-local dmg = CalcMagicalDamage(myHero,rTarget,480 + 250*myHero:GetSpellData(_R).level + (0.70*myHero.ap))
-PrintChat(dmg)
-						if hp < dmg then
+local dmg = CalcMagicalDamage(myHero,rTarget,200 + 100*myHero:GetSpellData(_R).level + (0.75*myHero.ap))
+local dmg2 = dmg * 1.32
+--PrintChat(dmg)
+PrintChat(dmg2)
+						if hp < dmg2 then
 						if Menu.Misc.Debug:Value() then
 						PrintChat("Debug: R Will KIll So Cast")
 				CastSpell(HK_R, rPos, R.Range, R.Delay*1000)--Si el enemigo se mueve falla la R en Root. Set no Pred
@@ -352,7 +392,44 @@ PrintChat(dmg)
 		end
 	end
 	
-end
+end--End of Steal System
+
+--Start AUTO System
+--AUTO Q
+if isReady(_Q) then
+			local aqTarget = GetTarget(Q.Range * Menu.Misc.MaxRange:Value())
+			if aqTarget and (IsSlowTarget(aqTarget) or IsImmobileTarget(aqTarget) or IsFearOrCharm(aqTarget)) and aqTarget:GetCollision(Q.Radius, Q.Speed, Q.Delay) < 1 then --Added Collision 1 for Q
+				local aqPos = aqTarget:GetPrediction(Q.Speed, Q.Delay)
+          CastSpell(HK_Q ,aqPos ,Q.Range , Q.Delay*1000)
+				--Control.CastSpell(HK_Q, qPos)
+				if Menu.Misc.Debug:Value() then
+                PrintChat("AUTO Smart Q")
+			end
+		end
+		end
+		
+		
+		--AUTO R
+		if isReady(_R) then
+			local arTarget = GetTarget(R.Range * Menu.Misc.MaxRange:Value())
+			if arTarget and (IsImmobileTarget(arTarget) or IsFearOrCharm(arTarget)) then
+			PrintChat("Posible R on Immobile Enemy (But wont die so Aborted)")
+				local arPos = arTarget:GetPrediction(R.Speed, R.Delay)
+local hp = arTarget.health + arTarget.shieldAP
+local dmg = CalcMagicalDamage(myHero,rTarget,200 + 100*myHero:GetSpellData(_R).level + (0.75*myHero.ap))
+local dmg2 = dmg * 1.2
+PrintChat(dmg)
+--print(dmg)
+						if hp < dmg2 then
+						if Menu.Misc.Debug:Value() then
+						PrintChat("Debug: Auto R on Killeable Immobile Enemy")
+				CastSpell(HK_R, arPos, R.Range, R.Delay*1000)--Si el enemigo se mueve falla la R en Root. Set no Pred
+			--end
+			end
+			end
+		end
+		end
+-- END AUTO SYSTEM
 end)--END OnUptade TICK
 
 
