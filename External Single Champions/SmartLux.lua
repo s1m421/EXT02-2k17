@@ -57,7 +57,7 @@ Menu.UltimateMisc:MenuElement({id = "AutoR", name = "Lux will R to Kill Single e
 Menu:MenuElement({type = MENU, id = "Misc", name = "Misc Settings"})
 Menu.Misc:MenuElement({id = "MaxRange", name = "Max Range Limiter", value = 0.9, min = 0.5, max = 1, step = 0.01})
 Menu.Misc:MenuElement({type = SPACE, id = "ToolTip", name = "eg. X = 0.80 (Q.Range = (1150 * 0.80) = 920)"})
-Menu.Misc:MenuElement({id = "Debug", name = "Debug Mode", value = true})
+Menu.Misc:MenuElement({id = "Debug", name = "Debug Mode", value = false})
 
 -- Drawings Menu
 Menu:MenuElement({type = MENU, id = "Draw", name = "Drawing Settings"})
@@ -284,13 +284,14 @@ end
 			local rTarget = GetTarget(R.Range * Menu.Misc.MaxRange:Value())
 		if Menu.Misc.Debug:Value() then
 			PrintChat("DEBUG: BAD Logic R Casted")
+			end
 			if rTarget then
 				local rPos = rTarget:GetPrediction(R.Speed, R.Delay)
 				Control.CastSpell(HK_R, rPos)
 			--end
 			end
 		end
-		end
+		--end
 		
 		
 		
@@ -299,19 +300,24 @@ end
 		 if isReady(_R) and Menu.Combo.SmartR:Value() and Menu.Combo.ComboR:Value() then
 			local rTarget = GetTarget(R.Range * Menu.Misc.MaxRange:Value())
 			if rTarget and IsImmobileTarget(rTarget) then
+			if Menu.Misc.Debug:Value() then
 			PrintChat("Target Not Killeable with R")
+			end
 				local rPos = rTarget:GetPrediction(R.Speed, R.Delay)
 local hp = rTarget.health + rTarget.shieldAP
 local dmg = CalcMagicalDamage(myHero,rTarget,200 + 100*myHero:GetSpellData(_R).level + (0.75*myHero.ap))
 local dmg2 = dmg * 1.32
 --PrintChat(dmg)
+if Menu.Misc.Debug:Value() then
 PrintChat(dmg2)
+end
 						if hp < dmg2 then
 						if Menu.Misc.Debug:Value() then
 						PrintChat("Debug: R Will KIll So Cast")
+						end
 				CastSpell(HK_R, rPos, R.Range, R.Delay*1000)--Si el enemigo se mueve falla la R en Root. Set no Pred
 			--end
-			end
+			--end
 			end
 		end
 		end
@@ -352,7 +358,9 @@ PrintChat(dmg2)
 				local qPos = qTarget:GetPrediction(Q.Speed, Q.Delay)
           CastSpell(HK_Q ,qPos ,Q.Range , Q.Delay*1000)
 				--Control.CastSpell(HK_Q, qPos)
-				--PrintChat("Combo Q Casted")
+				if Menu.Misc.Debug:Value() then
+				PrintChat("Steal Q Casted")
+				end
 		end
 		end
 		
@@ -413,20 +421,25 @@ if isReady(_Q) then
 		if isReady(_R) then
 			local arTarget = GetTarget(R.Range * Menu.Misc.MaxRange:Value())
 			if arTarget and (IsImmobileTarget(arTarget) or IsFearOrCharm(arTarget)) then
+			if Menu.Misc.Debug:Value() then
 			PrintChat("Posible R on Immobile Enemy (But wont die so Aborted)")
+			end
 				local arPos = arTarget:GetPrediction(R.Speed, R.Delay)
 local hp = arTarget.health + arTarget.shieldAP
 local dmg = CalcMagicalDamage(myHero,rTarget,200 + 100*myHero:GetSpellData(_R).level + (0.75*myHero.ap))
 local dmg2 = dmg * 1.2
+if Menu.Misc.Debug:Value() then
 PrintChat(dmg)
+end
 --print(dmg)
 						if hp < dmg2 then
 						if Menu.Misc.Debug:Value() then
 						PrintChat("Debug: Auto R on Killeable Immobile Enemy")
+						end
 				CastSpell(HK_R, arPos, R.Range, R.Delay*1000)--Si el enemigo se mueve falla la R en Root. Set no Pred
 			--end
 			end
-			end
+			--end
 		end
 		end
 -- END AUTO SYSTEM
