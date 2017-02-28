@@ -50,8 +50,10 @@ Menu.LastHit:MenuElement({id = "LastHitQ", name = "Use Q", value = false})
 Menu.LastHit:MenuElement({id = "LastHitMana", name = "Min. Mana", value = 40, min = 0, max = 100})
 
 -- Ultimate Misc Menu
-Menu:MenuElement({type = MENU, id = "UltimateMisc", name = "Ultimate Misc - WORK IN PROGRESS"})
-Menu.UltimateMisc:MenuElement({id = "AutoR", name = "Lux will R to Kill Single enemy on CC", value = true})
+Menu:MenuElement({type = MENU, id = "AutoEvent", name = "Auto Event Misc - WORK IN PROGRESS"})
+Menu.AutoEvent:MenuElement({id = "AutoRks", name = "Lux will R to Kill Single enemy on CC", value = true})
+Menu.AutoEvent:MenuElement({id = "AutoQ", name = "Q on CC Enemy (OP in Teamfighting)", value = true})
+Menu.AutoEvent:MenuElement({id = "AutoRtf", name = "Set R to hit as much enemies as you want:", value = 3, min = 1, max = 5, step = 1})
 
 -- General Misc Menu
 Menu:MenuElement({type = MENU, id = "Misc", name = "Misc Settings"})
@@ -123,6 +125,7 @@ function GetFarmTarget(minionRange)
 end
 
 -- Damage Calculations TEST Function
+--[[
 function GetRDmg(target)
 
 	local spellLevel = myHero:GetSpellData(_R).level
@@ -133,7 +136,7 @@ function GetRDmg(target)
 	local finalDamage = rDamage[spellLevel] + apDamage
 	--local finalDamage = (getdmg("R", target, myHero, 1) * luxR[target.networkID].stacks) * 0.8
 
-end
+end--]]
 
 --DEBUG Function
 
@@ -282,12 +285,12 @@ end
 		--- DEFAULT R (IF SMART R DISABLED, BAD IDEA)
 				 if isReady(_R) and Menu.Combo.ComboR:Value() and not Menu.Combo.SmartR:Value()  then
 			local rTarget = GetTarget(R.Range * Menu.Misc.MaxRange:Value())
-		if Menu.Misc.Debug:Value() then
-			PrintChat("DEBUG: BAD Logic R Casted")
-			end
 			if rTarget then
 				local rPos = rTarget:GetPrediction(R.Speed, R.Delay)
 				Control.CastSpell(HK_R, rPos)
+				if Menu.Misc.Debug:Value() then
+				PrintChat("Debug: BAD R COMBO CAST")
+				end
 			--end
 			end
 		end
@@ -301,21 +304,23 @@ end
 			local rTarget = GetTarget(R.Range * Menu.Misc.MaxRange:Value())
 			if rTarget and IsImmobileTarget(rTarget) then
 			if Menu.Misc.Debug:Value() then
-			PrintChat("Target Not Killeable with R")
+			PrintChat("Target Not Killeable with Smart R")
 			end
+			--PrintChat("Target Not Killeable with Smart R")
 				local rPos = rTarget:GetPrediction(R.Speed, R.Delay)
 local hp = rTarget.health + rTarget.shieldAP
 local dmg = CalcMagicalDamage(myHero,rTarget,200 + 100*myHero:GetSpellData(_R).level + (0.75*myHero.ap))
-local dmg2 = dmg * 1.32
+local dmg2 = dmg * 1.40
 --PrintChat(dmg)
 if Menu.Misc.Debug:Value() then
 PrintChat(dmg2)
 end
 						if hp < dmg2 then
 						if Menu.Misc.Debug:Value() then
-						PrintChat("Debug: R Will KIll So Cast")
+						PrintChat("Debug:Combo Smart R CAST")
 						end
 				CastSpell(HK_R, rPos, R.Range, R.Delay*1000)--Si el enemigo se mueve falla la R en Root. Set no Pred
+			--PrintChat("Debug:Combo Smart R CAST") --Test
 			--end
 			--end
 			end
@@ -426,8 +431,8 @@ if isReady(_Q) then
 			end
 				local arPos = arTarget:GetPrediction(R.Speed, R.Delay)
 local hp = arTarget.health + arTarget.shieldAP
-local dmg = CalcMagicalDamage(myHero,rTarget,200 + 100*myHero:GetSpellData(_R).level + (0.75*myHero.ap))
-local dmg2 = dmg * 1.2
+local dmg = CalcMagicalDamage(myHero,arTarget,200 + 100*myHero:GetSpellData(_R).level + (0.75*myHero.ap))
+local dmg2 = dmg * 1.3
 if Menu.Misc.Debug:Value() then
 PrintChat(dmg)
 end
@@ -437,6 +442,9 @@ end
 						PrintChat("Debug: Auto R on Killeable Immobile Enemy")
 						end
 				CastSpell(HK_R, arPos, R.Range, R.Delay*1000)--Si el enemigo se mueve falla la R en Root. Set no Pred
+				if Menu.Misc.Debug:Value() then
+--PrintChat("Debug: Auto R")
+end
 			--end
 			end
 			--end
