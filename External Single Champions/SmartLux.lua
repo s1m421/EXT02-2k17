@@ -49,6 +49,11 @@ Menu:MenuElement({type = MENU, id = "LastHit", name = "Last Hit Settings - WORK 
 Menu.LastHit:MenuElement({id = "LastHitQ", name = "Use Q", value = false})
 Menu.LastHit:MenuElement({id = "LastHitMana", name = "Min. Mana", value = 40, min = 0, max = 100})
 
+Menu:MenuElement({type = MENU, id = "Shield", name = "Smart W Usage"})
+Menu.Shield:MenuElement({id = "Auto", name = "Auto Shield", value = true})
+Menu.Shield:MenuElement({id = "Mode", name = "Only in Combo", value = false})
+Menu.Shield:MenuElement({id = "MinHealth", name = "Min Health -> %", value = 20,min = 0, max = 100})
+
 -- Ultimate Misc Menu
 Menu:MenuElement({type = MENU, id = "AutoEvent", name = "Auto Event Misc - WORK IN PROGRESS"})
 Menu.AutoEvent:MenuElement({id = "AutoRks", name = "Lux will R to Kill Single enemy on CC", value = true})
@@ -176,11 +181,19 @@ local ticker = GetTickCount()
 end
 
 
+function autoshield()
+	if Menu.Shield.Auto:Value() and isReady(_W) and myHero.health <= (myHero.maxHealth * Menu.Shield.MinHealth:Value() / 100) then
+			Control.CastSpell(HK_W)
+	end
+end
+
 -- Events
 -- OnUpdate (30')
 Callback.Add('Tick',function()
 
-
+if not Menu.Shield.Mode:Value() then
+	autoshield()
+	end
 
 	if Menu.Key.ComboKey:Value()  then--START COMBO SECTION
 	--print(myHero:GetSpellData(_E).name)
@@ -189,7 +202,10 @@ Callback.Add('Tick',function()
 	--local Evar = 0
 	--local Qvar = 0
 	
-	
+	if Menu.Shield.Mode:Value() then
+	autoshield()
+	end
+
 	if myHero:GetSpellData(_E).name == "LuxLightStrikeKugel" then
    --throw here
    if isReady(_E) and Menu.Combo.ComboE:Value() then
@@ -283,7 +299,7 @@ end
 	--]]	
 
 		--- DEFAULT R (IF SMART R DISABLED, BAD IDEA)
-				 if isReady(_R) and Menu.Combo.ComboR:Value() and not Menu.Combo.SmartR:Value()  then
+				 if isReady(_R) and not isReady(_Q) and not isReady(_E) and Menu.Combo.ComboR:Value() and not Menu.Combo.SmartR:Value()  then
 			local rTarget = GetTarget(R.Range * Menu.Misc.MaxRange:Value())
 			if rTarget then
 				local rPos = rTarget:GetPrediction(R.Speed, R.Delay)
@@ -319,7 +335,7 @@ end
 						if Menu.Misc.Debug:Value() then
 						PrintChat("Debug:Combo Smart R CAST")
 						end
-				CastSpell(HK_R, rPos, R.Range, R.Delay*1000)--Si el enemigo se mueve falla la R en Root. Set no Pred
+				CastSpell(HK_R, --[[rPos]] rTarget, R.Range, R.Delay*1000)--Si el enemigo se mueve falla la R en Root. Set no Pred
 			--PrintChat("Debug:Combo Smart R CAST") --Test
 			--end
 			--end
@@ -429,7 +445,7 @@ if isReady(_Q) then
 			if Menu.Misc.Debug:Value() then
 			PrintChat("Posible R on Immobile Enemy (But wont die so Aborted)")
 			end
-				local arPos = arTarget:GetPrediction(R.Speed, R.Delay)
+				local arPos = arTarget
 local hp = arTarget.health + arTarget.shieldAP
 local dmg = CalcMagicalDamage(myHero,arTarget,200 + 100*myHero:GetSpellData(_R).level + (0.75*myHero.ap))
 local dmg2 = dmg * 1.3
