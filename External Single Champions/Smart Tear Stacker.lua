@@ -3,7 +3,7 @@
 -- AKA : Call me Smart / SmartSharp
 -- Contact skype: smart0095
 require "DamageLib"
-require "LeagueSharp.Common.SmartPort"
+--require "LeagueSharp.Common.SmartPort"
 
 -- Spells
 local Q = {Delay = 0.250, Radius = 75, Range = 1160, Speed = 1900}
@@ -30,18 +30,18 @@ Menu.Key:MenuElement({id = "LastHitKey", name = "Disable on Last Hit Key", key =
 
 -- Keys Menu
 Menu:MenuElement({type = MENU, id = "Spells", name = "Spells to Use"})
-Menu.Key:MenuElement({id = "Qusage", name = "Use Q to Stack", value = true})
-Menu.Key:MenuElement({id = "Wusage", name = "Use W to Stack", value = true})
-Menu.Key:MenuElement({id = "Eusage", name = "Use E to Stack", value = true})
+Menu.Spells:MenuElement({id = "Qusage", name = "Use Q to Stack", value = true})
+Menu.Spells:MenuElement({id = "Wusage", name = "Use W to Stack", value = true})
+Menu.Spells:MenuElement({id = "Eusage", name = "Use E to Stack", value = true})
 
 
 -- Mana Manager Menu
 Menu:MenuElement({type = MENU, id = "ManaManager", name = "Mana Manager"})
-Menu.Harass:MenuElement({id = "Mana", name = "Min. Mana", value = 90, min = 0, max = 100})
+Menu.ManaManager:MenuElement({id = "Mana", name = "Min. Mana", value = 90, min = 0, max = 100})
 
 -- Drawings Menu
 Menu:MenuElement({type = MENU, id = "DrawOn", name = "Drawing Settings"})
-Menu.Draw:MenuElement({id = "DrawOn", name = "Draw Status", value = true})
+Menu.DrawOn:MenuElement({id = "DrawOn", name = "Draw Status", value = true})
 
 
 
@@ -77,36 +77,32 @@ local ticker = GetTickCount()
 	end
 end
 
+function GetItemSlot(unit, id)
+  for i = ITEM_1, ITEM_7 do
+    if unit:GetItemData(i).itemID == id then
+      return i
+    end
+  end
+  return 0 -- 
+end
 
 -- Events
 -- OnUpdate (30')
 Callback.Add('Tick',function()
 
 	if not Menu.Key.ComboKey:Value() and not Menu.Key.HarassKey:Value() and not Menu.Key.WaveClearKey:Value() and not Menu.Key.LastHitKey:Value() then--IF NOT IN COMBO and others KEYS THEN STACKER WORKS
-
-	if Menu.Enable.Enable:Value() and (myHero.mana/myHero.maxMana >= Menu.ManaManager.Mana:Value()/100) then
+		local tear = GetItemSlot(myHero,3070)
+		if tear > 0 and myHero:GetSpellData(tear).currentCd == 0 then
+        if isReady(_W) then
+			Control.CastSpell(HK_W--[[,mousePos,5000]])
+        elseif isReady(_E) then
+			Control.CastSpell(HK_E--[[,mousePos,5000]])
+        elseif isReady(_Q) then
+			Control.CastSpell(HK_Q--[[,mousePos,5000]])
+        end 
+    end
+  end
 	
-	if Menu.Spells.Qusage:Value()
-	if isReady(_Q) then
-	Control.CastSpell(HK_Q, Delay*4100)
-	end end
-	
-	if Menu.Spells.Wusage:Value()
-	if isReady(_W) then
-	Control.CastSpell(HK_W, Delay*4100)
-	end
-	end
-	
-	if Menu.Spells.Eusage:Value()
-	if isReady(_W) then
-	Control.CastSpell(HK_W, Delay*4100)
-	end
-	end
-	
-	end -- Finish mana Check
-	end--FINISH COMBO KEY
-	
-
 end)--END OnUptade TICK
 
 
@@ -117,13 +113,14 @@ Callback.Add('Load',function()
 	PrintChat("Smart Tear Stacker - Loaded")
 end)
 
--- OnDraw ADJUSTABLE by Scale MISC to prevent MAX RANGE PROBLEMS and Complains :D
+-- OnDraw TEST WIP
 function OnDraw()
 	if myHero.dead then return end
 
-	if Menu.Draw.DrawOn:Value()	then
+	if Menu.DrawOn.DrawOn:Value()	then
 	if Menu.Enable.Enable:Value() then
-		Draw.text("Stacker On", myHero.pos)
+		--Draw.text("Stacker On", myHero.pos)
+		--Draw.Text(hero.charName,12,posTo2D.x,posTo2D.y,Draw.Color(0x70FF0000));
 		end
     end
 end
