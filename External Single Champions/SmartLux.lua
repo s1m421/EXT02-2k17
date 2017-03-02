@@ -56,8 +56,9 @@ Menu.Shield:MenuElement({id = "MinHealth", name = "Min Health -> %", value = 20,
 
 -- Ultimate Misc Menu
 Menu:MenuElement({type = MENU, id = "AutoEvent", name = "Auto Event Misc - WORK IN PROGRESS"})
-Menu.AutoEvent:MenuElement({id = "AutoRks", name = "Lux will R to Kill Single enemy on CC", value = true})
+Menu.AutoEvent:MenuElement({id = "AutoRks", name = "Lux will R to Kill Single enemy ON CC", value = true})
 Menu.AutoEvent:MenuElement({id = "AutoQ", name = "Q on CC Enemy (OP in Teamfighting)", value = true})
+Menu.AutoEvent:MenuElement({id = "KsR", name = "Lux Will R on ANY ENEMY LOW HP to KSecure Kappa", value = true})
 Menu.AutoEvent:MenuElement({id = "AutoRtf", name = "Set R to hit as much enemies as you want:", value = 3, min = 1, max = 5, step = 1})
 
 -- General Misc Menu
@@ -335,7 +336,7 @@ end
 						if Menu.Misc.Debug:Value() then
 						PrintChat("Debug:Combo Smart R CAST")
 						end
-				CastSpell(HK_R, --[[rPos]] rTarget, R.Range, R.Delay*1000)--Si el enemigo se mueve falla la R en Root. Set no Pred
+				CastSpell(HK_R, rPos --[[rTarget]], R.Range, R.Delay*1000)--Si el enemigo se mueve falla la R en Root. Set no Pred
 			--PrintChat("Debug:Combo Smart R CAST") --Test
 			--end
 			--end
@@ -429,7 +430,7 @@ end--End of Steal System
 	
 --Start AUTO System
 --AUTO Q
-if isReady(_Q) then
+if isReady(_Q) and Menu.AutoEvent.AutoQ:Value()  then
 			local aqTarget = GetTarget(Q.Range * Menu.Misc.MaxRange:Value())
 			if aqTarget and (IsSlowTarget(aqTarget) or IsImmobileTarget(aqTarget) or IsFearOrCharm(aqTarget)) and aqTarget:GetCollision(Q.Radius, Q.Speed, Q.Delay) < 1 then --Added Collision 1 for Q
 				local aqPos = aqTarget:GetPrediction(Q.Speed, Q.Delay)
@@ -442,14 +443,14 @@ if isReady(_Q) then
 		end
 		
 		
-		--AUTO R
-		if isReady(_R) then
+		--AUTO R on CC
+		if isReady(_R) and Menu.AutoEvent.AutoRks:Value() then
 			local arTarget = GetTarget(R.Range * Menu.Misc.MaxRange:Value())
 			if arTarget and (IsImmobileTarget(arTarget) or IsFearOrCharm(arTarget)) then
 			if Menu.Misc.Debug:Value() then
 			PrintChat("Posible R on Immobile Enemy (But wont die so Aborted)")
 			end
-				local arPos = arTarget
+				local arPos = arTarget:GetPrediction(R.Speed, R.Delay)
 local hp = arTarget.health + arTarget.shieldAP
 local dmg = CalcMagicalDamage(myHero,arTarget,200 + 100*myHero:GetSpellData(_R).level + (0.75*myHero.ap))
 local dmg2 = dmg * 1.3
@@ -470,6 +471,37 @@ end
 			--end
 		end
 		end
+		
+		-- AUTO R AS KS
+				if isReady(_R) and Menu.AutoEvent.KsR:Value() then
+			local arTarget = GetTarget(R.Range * Menu.Misc.MaxRange:Value())
+			if arTarget then
+			if Menu.Misc.Debug:Value() then
+			PrintChat("Posible R on Immobile Enemy (But wont die so Aborted)")
+			end
+				local arPos = arTarget:GetPrediction(R.Speed, R.Delay)
+local hp = arTarget.health + arTarget.shieldAP
+local dmg = CalcMagicalDamage(myHero,arTarget,200 + 100*myHero:GetSpellData(_R).level + (0.75*myHero.ap))
+local dmg2 = dmg * 1.3
+if Menu.Misc.Debug:Value() then
+PrintChat(dmg)
+end
+--print(dmg)
+						if hp < dmg2 then
+						if Menu.Misc.Debug:Value() then
+						PrintChat("Debug: Auto R on Killeable Immobile Enemy")
+						end
+				CastSpell(HK_R, arPos, R.Range, R.Delay*1000)--Si el enemigo se mueve falla la R en Root. Set no Pred
+				if Menu.Misc.Debug:Value() then
+--PrintChat("Debug: Auto R")
+end
+			--end
+			end
+			--end
+		end
+		end
+		
+		
 -- END AUTO SYSTEM
 end)--END OnUptade TICK
 
