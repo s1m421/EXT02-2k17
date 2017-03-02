@@ -75,7 +75,8 @@ Menu.Draw:MenuElement({id = "DrawR", name = "Draw R", value = true})
 Menu.Draw:MenuElement({id = "DrawTarget", name = "Draw Target", value = true})
 
 --Call me Stupid for not Setting this Function before.
-function GetTarget(targetRange)
+--[[
+function STarget(targetRange)
 	local result
 	for i = 1,Game.HeroCount()  do
 		local hero = Game.Hero(i)
@@ -85,6 +86,61 @@ function GetTarget(targetRange)
 		end
 	end
 	return result
+end--]]
+
+function SDistance(p1,p2)
+return  math.sqrt(math.pow((p2.x - p1.x),2) + math.pow((p2.y - p1.y),2) + math.pow((p2.z - p1.z),2))
+end
+
+local _IsVisible = {}
+function OnVision(unit)
+	if _IsVisible[unit.networkID] == nil then _IsVisible[unit.networkID] = {state = unit.visible , tick = GetTickCount(), pos = unit.pos} end
+	if _IsVisible[unit.networkID].state == true and not unit.visible then _IsVisible[unit.networkID].state = false _IsVisible[unit.networkID].tick = GetTickCount() end
+	if _IsVisible[unit.networkID].state == false and unit.visible then _IsVisible[unit.networkID].state = true _IsVisible[unit.networkID].tick = GetTickCount() end
+	return _IsVisible[unit.networkID]
+end
+
+function Priority(charName)
+  local p1 = {"Alistar", "Amumu", "Blitzcrank", "Braum", "Cho'Gath", "Dr. Mundo", "Garen", "Gnar", "Maokai", "Hecarim", "Jarvan IV", "Leona", "Lulu", "Malphite", "Nasus", "Nautilus", "Nunu", "Olaf", "Rammus", "Renekton", "Sejuani", "Shen", "Shyvana", "Singed", "Sion", "Skarner", "Taric", "TahmKench", "Thresh", "Volibear", "Warwick", "MonkeyKing", "Yorick", "Zac", "Poppy"}
+  local p2 = {"Aatrox", "Darius", "Elise", "Evelynn", "Galio", "Gragas", "Irelia", "Jax", "Lee Sin", "Morgana", "Janna", "Nocturne", "Pantheon", "Rengar", "Rumble", "Swain", "Trundle", "Tryndamere", "Udyr", "Urgot", "Vi", "XinZhao", "RekSai", "Bard", "Nami", "Sona", "Camille"}
+  local p3 = {"Akali", "Diana", "Ekko", "FiddleSticks", "Fiora", "Gangplank", "Fizz", "Heimerdinger", "Jayce", "Kassadin", "Kayle", "Kha'Zix", "Lissandra", "Mordekaiser", "Nidalee", "Riven", "Shaco", "Vladimir", "Yasuo", "Zilean", "Zyra", "Ryze"}
+  local p4 = {"Ahri", "Anivia", "Annie", "Ashe", "Azir", "Brand", "Caitlyn", "Cassiopeia", "Corki", "Draven", "Ezreal", "Graves", "Jinx", "Kalista", "Karma", "Karthus", "Katarina", "Kennen", "KogMaw", "Kindred", "Leblanc", "Lucian", "Lux", "Malzahar", "MasterYi", "MissFortune", "Orianna", "Quinn", "Sivir", "Syndra", "Talon", "Teemo", "Tristana", "TwistedFate", "Twitch", "Varus", "Vayne", "Veigar", "Velkoz", "Viktor", "Xerath", "Zed", "Ziggs", "Jhin", "Soraka"}
+  if table.contains(p1, charName) then return 1 end
+  if table.contains(p2, charName) then return 1.25 end
+  if table.contains(p3, charName) then return 1.75 end
+  return table.contains(p4, charName) and 2.25 or 1
+end
+
+function STarget(range,t,pos)-- Ty Nod
+local t = t or "AD"
+local pos = pos or myHero.pos
+local target = {}
+	for i = 1, Game.HeroCount() do
+		local hero = Game.Hero(i)
+		if hero.isEnemy and not hero.dead then
+			OnVision(hero)
+		end
+		if hero.isEnemy and hero.valid and not hero.dead and (OnVision(hero).state == true or (OnVision(hero).state == false and GetTickCount() - OnVision(hero).tick < 650)) and hero.isTargetable then
+			local heroPos = hero.pos
+			if OnVision(hero).state == false then heroPos = hero.pos + Vector(hero.pos,hero.posTo):Normalized() * ((GetTickCount() - OnVision(hero).tick)/1000 * hero.ms) end
+			if SDistance(pos,heroPos) <= range then
+				if t == "AD" then
+					target[(CalcPhysicalDamage(myHero,hero,100) / hero.health)*Priority(hero.charName)] = hero
+				elseif t == "AP" then
+					target[(CalcMagicalDamage(myHero,hero,100) / hero.health)*Priority(hero.charName)] = hero
+				elseif t == "HYB" then
+					target[((CalcMagicalDamage(myHero,hero,50) + CalcPhysicalDamage(myHero,hero,50))/ hero.health)*Priority(hero.charName)] = hero
+				end
+			end
+		end
+	end
+	local bT = 0
+	for d,v in pairs(target) do
+		if d > bT then
+			bT = d
+		end
+	end
+	if bT ~= 0 then return target[bT] end
 end
 
 function IsImmobileTarget(unit) --Noddy CC Detector
@@ -210,7 +266,7 @@ if not Menu.Shield.Mode:Value() then
 	if myHero:GetSpellData(_E).name == "LuxLightStrikeKugel" then
    --throw here
    if isReady(_E) and Menu.Combo.ComboE:Value() then
-   local eTarget = GetTarget(E.Range * Menu.Misc.MaxRange:Value())
+   local eTarget = STarget(E.Range * Menu.Misc.MaxRange:Value())
 			if eTarget then
 			local ePos = eTarget:GetPrediction(E.Speed, E.Delay)
 				CastSpell(HK_E, ePos, E.Range, E.Delay*1000)
@@ -220,7 +276,7 @@ if not Menu.Shield.Mode:Value() then
 		end
 		end
 else if not isReady(_Q) and isReady(_E) then
-local eTarget = GetTarget(E.Range * Menu.Misc.MaxRange:Value())
+local eTarget = STarget(E.Range * Menu.Misc.MaxRange:Value())
 			if eTarget then
 			local ePos = eTarget:GetPrediction(E.Speed, E.Delay)
 				CastSpell(HK_E, ePos, E.Range, E.Delay*1000)
@@ -235,7 +291,7 @@ end
 
 		--SMART Q (IF SMART Q ENABLED)
 		if isReady(_Q) and --[[not Evar and--]] Menu.Combo.SmartQ:Value() then
-			local qTarget = GetTarget(Q.Range * Menu.Misc.MaxRange:Value())
+			local qTarget = STarget(Q.Range * Menu.Misc.MaxRange:Value())
 			if qTarget --[[and (IsSlowTarget(qTarget) or IsImmobileTarget(qTarget) or IsFearOrCharm(qTarget))]] and qTarget:GetCollision(Q.Radius, Q.Speed, Q.Delay) < 1 then --Added Collision 1 for Q
 				local qPos = qTarget:GetPrediction(Q.Speed, Q.Delay)
           CastSpell(HK_Q ,qPos ,Q.Range , Q.Delay*1000)
@@ -250,7 +306,7 @@ end
 		--DEFAULT Q	(IF SMART Q DISABLED)
 		if not Menu.Combo.SmartQ:Value() then
 		if isReady(_Q) and Menu.Combo.ComboQ:Value() then
-			local qTarget = GetTarget(Q.Range * Menu.Misc.MaxRange:Value())
+			local qTarget = STarget(Q.Range * Menu.Misc.MaxRange:Value())
 			if qTarget and qTarget:GetCollision(Q.Radius, Q.Speed, Q.Delay) < 1 then --Added Collision 1 for Q
 				local qPos = qTarget:GetPrediction(Q.Speed, Q.Delay)
           CastSpell(HK_Q ,qPos ,Q.Range , Q.Delay*1000)
@@ -269,7 +325,7 @@ end
 		
 		-- THROW E (Actually there are no more E Casting methods) -- PROBLEM HERE
 		if isReady(_E) and Menu.Combo.ComboE:Value() then --Throw E
-			local eTarget = GetTarget(E.Range * Menu.Misc.MaxRange:Value())
+			local eTarget = STarget(E.Range * Menu.Misc.MaxRange:Value())
 			if eTarget and Evar then -- Si la E no esta en el Aire entonces la Lanzamos
 				local ePos = eTarget:GetPrediction(E.Speed, E.Delay)
 				CastSpell(HK_E, ePos, E.Range, E.Delay*1000)
@@ -282,7 +338,7 @@ end
 		
  -- Explodes E
         if isReady(_E) and not Evar and not isReady(_Q) and Menu.Combo.ComboE:Value() then -- Cuando la E este ya en el aire y la Q tambien entonces Explotamos
-            local eTarget = GetTarget(E.Range * Menu.Misc.MaxRange:Value())
+            local eTarget = STarget(E.Range * Menu.Misc.MaxRange:Value())
             if eTarget and IsSlowTarget(eTarget) and not isReady(_Q) then
                 local ePos = eTarget:GetPrediction(E.Speed, E.Delay)
                 CastSpell(HK_E, ePos, E.Range, E.Delay*1000)
@@ -301,7 +357,7 @@ end
 
 		--- DEFAULT R (IF SMART R DISABLED, BAD IDEA)
 				 if isReady(_R) and not isReady(_Q) and not isReady(_E) and Menu.Combo.ComboR:Value() and not Menu.Combo.SmartR:Value()  then
-			local rTarget = GetTarget(R.Range * Menu.Misc.MaxRange:Value())
+			local rTarget = STarget(R.Range * Menu.Misc.MaxRange:Value())
 			if rTarget then
 				local rPos = rTarget:GetPrediction(R.Speed, R.Delay)
 				Control.CastSpell(HK_R, rPos)
@@ -318,7 +374,7 @@ end
 		
 		-- SMART R (IF SMART R ENABLED) NO R IF ENEMY WONT DIE / NO R IF ISNT SAFE HIT ON CC (SINGLE TARGET ATM)
 		 if isReady(_R) and Menu.Combo.SmartR:Value() and Menu.Combo.ComboR:Value() then
-			local rTarget = GetTarget(R.Range * Menu.Misc.MaxRange:Value())
+			local rTarget = STarget(R.Range * Menu.Misc.MaxRange:Value())
 			if rTarget and IsImmobileTarget(rTarget) then
 			if Menu.Misc.Debug:Value() then
 			PrintChat("Target Not Killeable with Smart R")
@@ -354,7 +410,7 @@ end
 		
 		
 		if Menu.Key.TrapKey:Value()  then
-			local qTarget = GetTarget(Q.Range * Menu.Misc.MaxRange:Value())
+			local qTarget = STarget(Q.Range * Menu.Misc.MaxRange:Value())
 			if qTarget and qTarget:GetCollision(Q.Radius, Q.Speed, Q.Delay) < 1 then --Added Collision 1 for Q
 				local qPos = qTarget:GetPrediction(Q.Speed, Q.Delay)
           CastSpell(HK_Q, qPos, Q.Range)
@@ -375,7 +431,7 @@ end
 	
 	if Menu.Key.StealKey:Value()  then
 		if isReady(_Q) and Menu.Key.StealKey:Value() then
-			local qTarget = GetTarget(Q.Range * Menu.Misc.MaxRange:Value())
+			local qTarget = STarget(Q.Range * Menu.Misc.MaxRange:Value())
 			if qTarget and qTarget:GetCollision(Q.Radius, Q.Speed, Q.Delay) < 1 then --Added Collision 1 for Q
 				local qPos = qTarget:GetPrediction(Q.Speed, Q.Delay)
           CastSpell(HK_Q ,qPos ,Q.Range , Q.Delay*1000)
@@ -387,7 +443,7 @@ end
 		end
 		
 		if isReady(_E) and Menu.Key.StealKey:Value() then
-			local eTarget = GetTarget(E.Range * Menu.Misc.MaxRange:Value())
+			local eTarget = STarget(E.Range * Menu.Misc.MaxRange:Value())
 			if eTarget then
 				local ePos = eTarget:GetPrediction(E.Speed, E.Delay)
 				CastSpell(HK_E, ePos, E.Range, E.Delay*1000)
@@ -402,14 +458,14 @@ end--End of Steal System
 	
 	if Menu.Key.HarassKey:Value() and (myHero.mana/myHero.maxMana >= Menu.Harass.HarassMana:Value()/100) then
 		if isReady(_Q) and Menu.Harass.HarassQ:Value() then
-			local qTarget = GetTarget(Q.Range * Menu.Misc.MaxRange:Value())
+			local qTarget = STarget(Q.Range * Menu.Misc.MaxRange:Value())
 			if qTarget and qTarget:GetCollision(Q.Radius, Q.Speed, Q.Delay) < 1 then
 				local qPos = qTarget:GetPrediction(Q.Speed, Q.Delay)
 				Control.CastSpell(HK_Q, qPos)
 			end
 		end
 		if isReady(_W) and Menu.Harass.HarassE:Value() then
-			local wTarget = GetTarget(E.Range * Menu.Misc.MaxRange:Value())
+			local wTarget = STarget(E.Range * Menu.Misc.MaxRange:Value())
 			if wTarget then
 				local wPos = wTarget:GetPrediction(E.Speed, E.Delay)
 				Control.CastSpell(HK_W, wPos)
@@ -431,7 +487,7 @@ end--End of Steal System
 --Start AUTO System
 --AUTO Q
 if isReady(_Q) and Menu.AutoEvent.AutoQ:Value()  then
-			local aqTarget = GetTarget(Q.Range * Menu.Misc.MaxRange:Value())
+			local aqTarget = STarget(Q.Range * Menu.Misc.MaxRange:Value())
 			if aqTarget and (IsSlowTarget(aqTarget) or IsImmobileTarget(aqTarget) or IsFearOrCharm(aqTarget)) and aqTarget:GetCollision(Q.Radius, Q.Speed, Q.Delay) < 1 then --Added Collision 1 for Q
 				local aqPos = aqTarget:GetPrediction(Q.Speed, Q.Delay)
           CastSpell(HK_Q ,aqPos ,Q.Range , Q.Delay*1000)
@@ -445,7 +501,7 @@ if isReady(_Q) and Menu.AutoEvent.AutoQ:Value()  then
 		
 		--AUTO R on CC
 		if isReady(_R) and Menu.AutoEvent.AutoRks:Value() then
-			local arTarget = GetTarget(R.Range * Menu.Misc.MaxRange:Value())
+			local arTarget = STarget(R.Range * Menu.Misc.MaxRange:Value())
 			if arTarget and (IsImmobileTarget(arTarget) or IsFearOrCharm(arTarget)) then
 			if Menu.Misc.Debug:Value() then
 			PrintChat("Posible R on Immobile Enemy (But wont die so Aborted)")
@@ -474,7 +530,7 @@ end
 		
 		-- AUTO R AS KS
 				if isReady(_R) and Menu.AutoEvent.KsR:Value() then
-			local arTarget = GetTarget(R.Range * Menu.Misc.MaxRange:Value())
+			local arTarget = STarget(R.Range * Menu.Misc.MaxRange:Value())
 			if arTarget then
 			if Menu.Misc.Debug:Value() then
 			PrintChat("Posible R on Immobile Enemy (But wont die so Aborted)")
@@ -528,7 +584,7 @@ function OnDraw()
 	end
 
     if Menu.Draw.DrawTarget:Value() then
-	    local drawTarget = GetTarget(Q.Range)
+	    local drawTarget = STarget(Q.Range)
 	    if drawTarget then
 		    Draw.Circle(drawTarget.pos,80,3,Draw.Color(255, 255, 0, 0))
 	    end
