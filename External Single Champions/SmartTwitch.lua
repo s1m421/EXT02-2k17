@@ -262,8 +262,8 @@ function SmartTwtich:Combo()
 	local Quse = self.Menu.Misc.AutoQ:Value()
 	local Wuse = self.Menu.Spells.SpellsW:Value()
 	local Euse = self.Menu.Spells.AutoE:Value()
-	local Ruse = self.Menu.Spells.SpellsR:Value()
-	local AutoR = self.Menu.Spells.AutoR:Value()
+	--local Ruse = self.Menu.Spells.SpellsR:Value()
+	--local AutoR = self.Menu.Spells.AutoR:Value()
 
 	local target = STarget(W.Range)
 
