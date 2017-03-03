@@ -13,7 +13,7 @@ local E = {Delay = 0.250, Radius = 200, Range = 1250, Speed = 900, Collision = f
 local R = {Delay = 1, Radius = 120, Range = 3300, Speed = math.huge, Collision = false}
 
 -- Menu local
-local Menu = MenuElement({type = MENU, id = "SmartLux", name = "Smart Lux", leftIcon="http://puu.sh/ul3vR/fc3f5ec4f3.jpg"})
+local Menu = MenuElement({type = MENU, id = "SmartLux", name = "Smart Lux", leftIcon="https://puu.sh/urze2/9ecca9ea34.jpg"})
 
 -- Keys Menu
 Menu:MenuElement({type = MENU, id = "Key", name = "Key Settings"})

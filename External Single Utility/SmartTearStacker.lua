@@ -11,7 +11,7 @@ local E = {Delay = 0.250, Radius = 200, Range = 1250, Speed = 900,}
 local R = {Delay = 1, Radius = 120, Range = 3300, Speed = math.huge}
 
 -- Menu local
-local Menu = MenuElement({type = MENU, id = "SmartTearStacker", name = "Smart Tear Stacker", leftIcon="http://puu.sh/ul3vR/fc3f5ec4f3.jpg"})
+local Menu = MenuElement({type = MENU, id = "SmartTearStacker", name = "Smart Tear Stacker", leftIcon="http://puu.sh/urxln/2d814c7f82.jpg"})
 
 
 -- Keys Menu
