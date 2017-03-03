@@ -77,6 +77,26 @@ local ticker = GetTickCount()
 	end
 end
 
+function GetBuffs(unit)
+	T = {}
+	for i = 0, unit.buffCount do
+		local Buff = unit:GetBuff(i)
+		if Buff.count > 0 then
+			table.insert(T, Buff)
+		end
+	end
+	return T
+end
+
+function ImRecalling()
+	for K, Buff in pairs(GetBuffs(myHero)) do
+		if Buff.name == "recall" and Buff.duration > 0 then
+			return true
+		end
+	end
+	return false
+end
+
 function GetItemSlot(unit, id)
   for i = ITEM_1, ITEM_7 do
     if unit:GetItemData(i).itemID == id then
@@ -91,7 +111,8 @@ end
 Callback.Add('Tick',function()
 
 	if not Menu.Key.ComboKey:Value() and not Menu.Key.HarassKey:Value() and not Menu.Key.WaveClearKey:Value() and not Menu.Key.LastHitKey:Value() then--IF NOT IN COMBO and others KEYS THEN STACKER WORKS
-		local tear = GetItemSlot(myHero,3070)
+	if Menu.Enable.Enable:Value() and (myHero.mana/myHero.maxMana >= Menu.ManaManager.Mana:Value()/100) and not ImRecalling() then
+			local tear = GetItemSlot(myHero,3070)
 		if tear > 0 and myHero:GetSpellData(tear).currentCd == 0 then
         if isReady(_W) then
 			Control.CastSpell(HK_W--[[,mousePos,5000]])
@@ -101,6 +122,7 @@ Callback.Add('Tick',function()
 			Control.CastSpell(HK_Q--[[,mousePos,5000]])
         end 
     end
+	end
   end
 	
 end)--END OnUptade TICK
