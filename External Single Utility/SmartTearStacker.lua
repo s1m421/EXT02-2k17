@@ -114,31 +114,31 @@ Callback.Add('Tick',function()
 			local arch = GetItemSlot(myHero,3003)
 			local mune = GetItemSlot(myHero,3004)
 		if tear > 0 and myHero:GetSpellData(tear).currentCd == 0 then
-        if isReady(_W) then
+        if isReady(_W) and Menu.Spells.Wusage:Value() then
 			Control.CastSpell(HK_W--[[,mousePos,5000]])
-        elseif isReady(_E) then
+        elseif isReady(_E) and Menu.Spells.Eusage:Value()then
 			Control.CastSpell(HK_E--[[,mousePos,5000]])
-        elseif isReady(_Q) then
+        elseif isReady(_Q) and Menu.Spells.Qusage:Value()then
 			Control.CastSpell(HK_Q--[[,mousePos,5000]])
         end 
 		end
 	
 			if arch > 0 and myHero:GetSpellData(tear).currentCd == 0 then
-        if isReady(_W) then
+        if isReady(_W) and Menu.Spells.Wusage:Value() then
 			Control.CastSpell(HK_W--[[,mousePos,5000]])
-        elseif isReady(_E) then
+        elseif isReady(_E) and Menu.Spells.Eusage:Value()then
 			Control.CastSpell(HK_E--[[,mousePos,5000]])
-        elseif isReady(_Q) then
+        elseif isReady(_Q) and Menu.Spells.Qusage:Value()then
 			Control.CastSpell(HK_Q--[[,mousePos,5000]])
         end 
 		end
 	
 			if mune > 0 and myHero:GetSpellData(tear).currentCd == 0 then
-        if isReady(_W) then
+        if isReady(_W) and Menu.Spells.Wusage:Value() then
 			Control.CastSpell(HK_W--[[,mousePos,5000]])
-        elseif isReady(_E) then
+        elseif isReady(_E) and Menu.Spells.Eusage:Value()then
 			Control.CastSpell(HK_E--[[,mousePos,5000]])
-        elseif isReady(_Q) then
+        elseif isReady(_Q) and Menu.Spells.Qusage:Value()then
 			Control.CastSpell(HK_Q--[[,mousePos,5000]])
         end 
 		end
