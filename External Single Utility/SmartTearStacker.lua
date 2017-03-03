@@ -1,9 +1,7 @@
 -- Copyright Smart under GNU licence.
--- Smart LoL GOS User
+-- Smart LoL GOS Dev
 -- AKA : Call me Smart / SmartSharp
 -- Contact skype: smart0095
-require "DamageLib"
---require "LeagueSharp.Common.SmartPort"
 
 -- Spells
 local Q = {Delay = 0.250, Radius = 75, Range = 1160, Speed = 1900}
@@ -113,6 +111,8 @@ Callback.Add('Tick',function()
 	if not Menu.Key.ComboKey:Value() and not Menu.Key.HarassKey:Value() and not Menu.Key.WaveClearKey:Value() and not Menu.Key.LastHitKey:Value() then--IF NOT IN COMBO and others KEYS THEN STACKER WORKS
 	if Menu.Enable.Enable:Value() and (myHero.mana/myHero.maxMana >= Menu.ManaManager.Mana:Value()/100) and not ImRecalling() then
 			local tear = GetItemSlot(myHero,3070)
+			local arch = GetItemSlot(myHero,3003)
+			local mune = GetItemSlot(myHero,3004)
 		if tear > 0 and myHero:GetSpellData(tear).currentCd == 0 then
         if isReady(_W) then
 			Control.CastSpell(HK_W--[[,mousePos,5000]])
@@ -121,7 +121,27 @@ Callback.Add('Tick',function()
         elseif isReady(_Q) then
 			Control.CastSpell(HK_Q--[[,mousePos,5000]])
         end 
-    end
+		end
+	
+			if arch > 0 and myHero:GetSpellData(tear).currentCd == 0 then
+        if isReady(_W) then
+			Control.CastSpell(HK_W--[[,mousePos,5000]])
+        elseif isReady(_E) then
+			Control.CastSpell(HK_E--[[,mousePos,5000]])
+        elseif isReady(_Q) then
+			Control.CastSpell(HK_Q--[[,mousePos,5000]])
+        end 
+		end
+	
+			if mune > 0 and myHero:GetSpellData(tear).currentCd == 0 then
+        if isReady(_W) then
+			Control.CastSpell(HK_W--[[,mousePos,5000]])
+        elseif isReady(_E) then
+			Control.CastSpell(HK_E--[[,mousePos,5000]])
+        elseif isReady(_Q) then
+			Control.CastSpell(HK_Q--[[,mousePos,5000]])
+        end 
+		end
 	end
   end
 	
