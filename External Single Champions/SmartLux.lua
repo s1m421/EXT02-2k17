@@ -485,10 +485,10 @@ end--End of Steal System
 			end
 		end
 		if isReady(_W) and Menu.Harass.HarassE:Value() then
-			local wTarget = STarget(E.Range * Menu.Misc.MaxRange:Value())
-			if wTarget then
-				local wPos = wTarget:GetPrediction(E.Speed, E.Delay)
-				Control.CastSpell(HK_W, wPos)
+			local eTarget = STarget(E.Range * Menu.Misc.MaxRange:Value())
+			if eTarget then
+				local wPos = eTarget:GetPrediction(E.Speed, E.Delay)
+				Control.CastSpell(HK_E, wPos)
 			end
 		end
 	end
