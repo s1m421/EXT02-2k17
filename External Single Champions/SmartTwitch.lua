@@ -61,7 +61,7 @@ SmartTwitchMenu.Drawing:MenuElement({id = "DrawEDmg", name = "Draw E Dmg", value
 SmartTwitchMenu.Drawing:MenuElement({id = "DrawTarget", name = "Draw Target Circle", value = true})
 
 
---[[]]
+--[[
 --Custom TargetSelector STARTS
 function Priority(charName)
   local p1 = {"Alistar", "Amumu", "Blitzcrank", "Braum", "Cho'Gath", "Dr. Mundo", "Garen", "Gnar", "Maokai", "Hecarim", "Jarvan IV", "Leona", "Lulu", "Malphite", "Nasus", "Nautilus", "Nunu", "Olaf", "Rammus", "Renekton", "Sejuani", "Shen", "Shyvana", "Singed", "Sion", "Skarner", "Taric", "TahmKench", "Thresh", "Volibear", "Warwick", "MonkeyKing", "Yorick", "Zac", "Poppy"}
