@@ -9,7 +9,7 @@ require "DamageLib"
 
 --Twitch Spells Data
 local Q = {Range = 1150,Delay = 0.25, Radius = 50, Speed = 1200}
-local W = {Range = 950, Delay = 0.25, Radius = 50, Speed = 1410}
+local W = {Range = 950, Delay = 1.0, Radius = 50, Speed = 1410}
 local E = {Range = 1200, Delay = 0.25, Speed = 7777777}
 local R = {Range = 875}
 local SmartPoison = {}
@@ -30,8 +30,8 @@ end
 local SmartTwitchMenu = MenuElement({type = MENU, id = "SmartTwitchMenu", name = "Twitch", leftIcon = "http://ddragon.leagueoflegends.com/cdn/7.1.1/img/champion/Twitch.png"})
 SmartTwitchMenu:MenuElement({type = MENU, id = "Key", name = "Key Settings"})--Done
 SmartTwitchMenu.Key:MenuElement({id = "ComboKey", name = "Combo Key",key = 32 })--Done
-SmartTwitchMenu.Key:MenuElement({id = "HarassKey", name = "Harass Key",key = string.byte("C") })--Done
-SmartTwitchMenu.Key:MenuElement({id = "ClearKey", name = "Clear Key WIP",key = string.byte("V") })--WIP
+SmartTwitchMenu.Key:MenuElement({id = "HarassKey", name = "Harass Key",key = 67})--Done
+SmartTwitchMenu.Key:MenuElement({id = "ClearKey", name = "Clear Key WIP",key = 86})--WIP
 SmartTwitchMenu:MenuElement({type = MENU, id = "Combo", name = "Combo Spells"})
 SmartTwitchMenu.Combo:MenuElement({id = "UseW", name = "Use W in Combo", value = true})--Done
 SmartTwitchMenu.Combo:MenuElement({id = "UseE", name = "Use E in Combo", value = true})--Done
@@ -60,6 +60,8 @@ SmartTwitchMenu.Drawing:MenuElement({id = "DrawR", name = "Draw R Range", value 
 SmartTwitchMenu.Drawing:MenuElement({id = "DrawEDmg", name = "Draw E Dmg", value = true})
 SmartTwitchMenu.Drawing:MenuElement({id = "DrawTarget", name = "Draw Target Circle", value = true})
 
+
+--[[]]
 --Custom TargetSelector STARTS
 function Priority(charName)
   local p1 = {"Alistar", "Amumu", "Blitzcrank", "Braum", "Cho'Gath", "Dr. Mundo", "Garen", "Gnar", "Maokai", "Hecarim", "Jarvan IV", "Leona", "Lulu", "Malphite", "Nasus", "Nautilus", "Nunu", "Olaf", "Rammus", "Renekton", "Sejuani", "Shen", "Shyvana", "Singed", "Sion", "Skarner", "Taric", "TahmKench", "Thresh", "Volibear", "Warwick", "MonkeyKing", "Yorick", "Zac", "Poppy"}
@@ -104,7 +106,7 @@ local target = {}
 	if bT ~= 0 then return target[bT] end
 end
 --Custom TargetSelector FINISH
-
+--]]
 --Custom CastSpell STARTS
 local castSpell = {state = 0, tick = GetTickCount(), casting = GetTickCount() - 1000, mouse = mousePos}
 local function CastSpell(spell,pos,range,delay)
@@ -137,6 +139,7 @@ local ticker = GetTickCount()
 	end
 end
 --Custom CastSpell FINISH
+
 
 --Extra Functions STARTS
 function SDistance(p1,p2)
@@ -268,6 +271,8 @@ end
 --CONTAMINATE ALGORITHM STARTS
 function SmartTwitch:E_Logic()
 
+
+	
 -- Stack Manual Counter
 function EStacks(unit)
   for i=1,Game.HeroCount() do
@@ -299,7 +304,7 @@ end
 			local TargetERange = GettingTarget(E.Range)
 			local ETargetPos = TargetERange:GetPrediction(E.Range, E.speed, E.delay)
 			local stack = EStacks(hero)
-			--local target = STarget(E.Range)
+			local target = GettingTarget(E.Range)
 									--[[How Algorithm Works:
 									E LOGIC CALC ..
 									If Auto E or ComboE then
@@ -344,15 +349,36 @@ end --CONTAMINATE ALGORITHM FINISH
 --OnUpdate STARTS
 function SmartTwitch:Tick()
 
+local AttackSpeed = 0.68 * myHero.attackSpeed
+	
+--[[
+	if myHero.attackData.state == 2 then
+	print("AHORA")
+	else
+	print("NO")
+	end
+	--]]
+--print(AttackSpeed)	
 --W Usage (Combo+WOnCombo / Harass+WOnHarass + ManaCheck)
   if (SmartTwitchMenu.Key.ComboKey:Value() and SmartTwitchMenu.Combo.UseW:Value()) or (SmartTwitchMenu.Harass.UseW:Value() and SmartTwitchMenu.Key.HarassKey:Value() and myHero.mana/myHero.maxMana > SmartTwitchMenu.Harass.ManaW:Value()/100)	then
         if isReady(_W) then
-          local wTarget = STarget(E.Range)
+          local wTarget = GettingTarget(E.Range)
+			if AttackSpeed > 2.0 then
                   if wTarget and myHero.attackData.state == 2 then
                     local pos = wTarget:GetPrediction(W.Speed, W.Radius, W.Delay)
+                    Control.CastSpell(HK_W,pos)
+					--print("W Cancel AA")
+					--print(AttackSpeed)
+                  end
+			elseif AttackSpeed <= 2.0 then
+			if wTarget and myHero.attackData.state ~= 2 then
+                    local pos = wTarget:GetPrediction(W.Speed, W.Radius, W.Delay)
                     CastSpell(HK_W,pos)
+					--print("W Normal")
+					--print(AttackSpeed)
                   end
         end
+  end
   end
   
 self:E_Logic()
@@ -365,7 +391,7 @@ Callback.Add("Draw", function()
 	if myHero.dead then return end
 	
 if SmartTwitchMenu.Drawing.DrawTarget:Value() then
-	    local drawTarget = STarget(E.Range)
+	    local drawTarget = GettingTarget(E.Range)
 	    if drawTarget then
 		    Draw.Circle(drawTarget.pos,80,3,Draw.Color(255, 255, 0, 0))
 	    end
