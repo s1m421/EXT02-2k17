@@ -1,3 +1,8 @@
+-- Copyright Smart under GNU licence.
+-- Smart LoL GOS Dev
+-- AKA : Call me Smart / SmartSharp
+-- Contact skype: smart0095
+
 --HeroCheck
 if myHero.charName ~= "Twitch" then return end
 
@@ -247,7 +252,6 @@ function SmartTwitch:AddToTable() --Tables Statments
 			SmartPoison[hero.networkID] = {}
 			SmartPoison[hero.networkID].stacks = 0
 			SmartPoison[hero.networkID].tick = 0
-			--PrintChat("Initiated " .. hero.charName .. " with " .. SmartPoison[hero.networkID].stacks .. " stacks.")
 		end
 	end
 end
@@ -279,7 +283,7 @@ function EStacks(unit)
       local hero = Game.Hero(i)
       local buff = self:GetBuff(hero, "TwitchDeadlyVenom")
             if hero and hero.isEnemy and self:HasBuff(hero, "TwitchDeadlyVenom") and buff then
-              --Print("Stored Stacks = " .. SmartPoison[hero.networkID].stacks)
+              --Print("stacks = " .. SmartPoison[hero.networkID].stacks)
                   if buff.duration > 5.98 then --HackFix until Api Supports TwitchStacks
                               if SmartPoison[hero.networkID].stacks ~= 6 then
                                 SmartPoison[hero.networkID].stacks = SmartPoison[hero.networkID].stacks + 1

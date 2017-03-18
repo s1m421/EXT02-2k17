@@ -8,7 +8,7 @@ if myHero.charName ~= "Lux" then return end
 require "DamageLib"
 
 -- Spells
-local Q = {Delay = 0.250, Radius = 75, Range = 1160, Speed = 1900, Collision = true}
+local Q = {Delay = 0.250, Radius = 75, Range = 1160, Speed = 1750, Collision = true}
 local E = {Delay = 0.250, Radius = 200, Range = 1250, Speed = 900, Collision = false}
 local R = {Delay = 1, Radius = 120, Range = 3300, Speed = math.huge, Collision = false}
 
@@ -295,9 +295,9 @@ if not Menu.Shield.Mode:Value() then
 			end
 		end
 		end
-else if not isReady(_Q) and isReady(_E) then
+else if isReady(_E) then --IF Q on Air + E Aviable or NO posible Q + E aviable Then CAST E EXPLOSION
 local eTarget = STarget(E.Range * Menu.Misc.MaxRange:Value())
-			if eTarget then
+			if eTarget and not isReady(_Q) and isReady(_E) or eTarget:GetCollision(E.Radius, E.Speed, E.Delay) > 1 and isReady(_E) then
 			local ePos = eTarget:GetPrediction(E.Speed, E.Delay)
 				CastSpell(HK_E, ePos, E.Range, E.Delay*1000)
 				if Menu.Misc.Debug:Value() then
